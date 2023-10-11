@@ -6,4 +6,4 @@
 - `python manage.py migrate <class name>`:  migrate class name
 ---
 ## ERDiagram
-![[FYD_ERD.png]]
+![Screenshot of ERDiagram](/FYD_ERD.png)
