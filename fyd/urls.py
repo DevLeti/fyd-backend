@@ -16,9 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from User.views import UserListAPI
+from User.views import UserListAPI, ServerListAPI, LikeListAPI
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/user/', UserListAPI.as_view())
+    path('api/user/', UserListAPI.as_view()),
+    path('api/server/', ServerListAPI.as_view()),
+    path('api/like/', LikeListAPI.as_view())
 ]

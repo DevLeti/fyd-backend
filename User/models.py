@@ -17,7 +17,7 @@ class Server(models.Model):
     server_url = models.CharField(max_length=400)
 
     def __str__(self):
-        return self.server_id + " " + self.name
+        return str(self.server_id) + " " + self.server_name
 
 # TODO: python manage.py makemigration & migrate
 # TODO: Tag CRUD 구현
