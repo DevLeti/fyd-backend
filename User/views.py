@@ -37,6 +37,32 @@ class ServerListAPI(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class ServerDetailAPI(APIView):
+    def get_object(self, pk):
+        try:
+            return Server.objects.get(pk=pk)
+        except User.DoesNotExist:
+            raise Http404
+    
+    def get(self, request, pk, format=None):
+        server = self.get_object(pk)
+        serializer = ServerSerializer(server)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        server = self.get_object(pk)
+        serializer = ServerSerializer(server, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        server = self.get_object(pk)
+        server.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        
+
 class LikeListAPI(APIView):
     def get(self, request):
         queryset = Like.objects.all()
