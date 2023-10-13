@@ -66,7 +66,7 @@ class ServerDetailAPI(APIView):
     def get_object(self, pk):
         try:
             return Server.objects.get(pk=pk)
-        except User.DoesNotExist:
+        except Server.DoesNotExist:
             raise Http404
     
     def get(self, request, pk, format=None):
@@ -102,3 +102,31 @@ class LikeListAPI(APIView):
             serializer.save() # 저장
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request):
+        user_id = request.data['user_id']
+        server_id = request.data['server_id']
+        like = Like.objects.filter(user_id=user_id, server_id=server_id)
+        # like = Like.objects.get(data=request.data)
+        like.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+class LikeDetailAPI(APIView):
+    def get_object(self, pk):
+        try:
+            return Like.objects.get(pk=pk)
+        except Like.DoesNotExist:
+            raise Http404
+    
+    # pk의 like 리스트를 넘겨줌
+    def get(self, request, pk, format=None):
+        like = Like.objects.filter(server_id=pk)
+        serializer = LikeSerializer(like, many=True)
+        return Response(serializer.data)
+
+    # def put(self, request, pk, format=None):
+    #     like = self.get_object(pk)
+    #     serializer = LikeSerializer(like, data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
