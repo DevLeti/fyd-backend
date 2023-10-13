@@ -1,7 +1,5 @@
 from django.db import models
 
-# Create your models here.
-# TODO: User CRUD 구현
 class User(models.Model):
     user_id = models.CharField(max_length=200, primary_key=True)
     user_pw = models.CharField(max_length=200)
@@ -21,7 +19,6 @@ class Tag(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     tag_name = models.CharField(max_length=100)
 
-# TODO: Like CRUD 구현
 class Like(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     server_id = models.ForeignKey(Server, on_delete=models.CASCADE)
