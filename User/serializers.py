@@ -2,6 +2,7 @@
 from rest_framework import serializers
 from .models import User
 from .models import Server
+from .models import Tag
 from .models import Like
 
 class UserSerializer(serializers.ModelSerializer) :
@@ -12,6 +13,11 @@ class UserSerializer(serializers.ModelSerializer) :
 class ServerSerializer(serializers.ModelSerializer) :
     class Meta :
         model = Server        # Server 모델 사용
+        fields = '__all__'            # 모든 필드 포함
+
+class TagSerializer(serializers.ModelSerializer) :
+    class Meta :
+        model = Tag        # Tag 모델 사용
         fields = '__all__'            # 모든 필드 포함
 
 class LikeSerializer(serializers.ModelSerializer) :
