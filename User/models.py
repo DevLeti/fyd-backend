@@ -4,9 +4,6 @@ class User(models.Model):
     user_id = models.CharField(max_length=200, primary_key=True)
     user_pw = models.CharField(max_length=200)
 
-    # def __str__(self):
-    #     return self.user_id + " " + self.user_pw
-
 class Server(models.Model):
     server_id = models.AutoField(primary_key=True)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)

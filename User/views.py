@@ -102,6 +102,32 @@ class TagListAPI(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class TagDetailAPI(APIView):
+    # def get_object(self, pk):
+    #     try:
+    #         return Tag.objects.get(pk=pk)
+    #     except Tag.DoesNotExist:
+    #         raise Http404
+    
+    def get(self, request, server_id, format=None):
+        tag = Tag.objects.filter(server_id=server_id)
+        serializer = TagSerializer(tag, many=True)
+        return Response(serializer.data)
+
+    # def put(self, request, pk, format=None):
+    #     tag = self.get_object(pk)
+    #     serializer = TagSerializer(tag, data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, server_id, format=None):
+        tag_name = request.data["tag_name"]
+        tag = Tag.objects.filter(server_id=server_id, tag_name=tag_name)
+        tag.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 class LikeListAPI(APIView):
     def get(self, request):
         queryset = Like.objects.all()
