@@ -1,16 +1,16 @@
 #view.py
 from django.shortcuts import render
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from .models import Server, Like, Tag
 from django.contrib.auth.models import User
-# from .models import User, Server, Like, Tag
 from rest_framework.views import APIView
-from .serializers import UserSerializer, ServerSerializer, LikeSerializer, TagSerializer, RegisterSerializer
+from .serializers import UserSerializer, ServerSerializer, CreateServerSerializer, PutServerSerializer,LikeSerializer, CreateLikeSerializer, TagSerializer, CreateTagSerializer, RegisterSerializer
 from rest_framework import status
 from django.http import Http404
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
-
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import generics
 
 class RegisterView(generics.CreateAPIView):
@@ -57,6 +57,9 @@ class UserDetailAPI(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class ServerListAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
     def get(self, request):
         queryset = Server.objects.all()
         print(queryset)
@@ -65,13 +68,17 @@ class ServerListAPI(APIView):
     
     def post(self, request):
         # request.data는 사용자의 입력 데이터
-        serializer = ServerSerializer(data=request.data)
+        serializer = CreateServerSerializer(data=request.data)
+
         if serializer.is_valid(): #유효성 검사
+            serializer.validated_data['user_id'] = request.user # user 추가
             serializer.save() # 저장
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ServerDetailAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     def get_object(self, pk):
         try:
             return Server.objects.get(pk=pk)
@@ -85,19 +92,22 @@ class ServerDetailAPI(APIView):
 
     def put(self, request, pk, format=None):
         server = self.get_object(pk)
-        serializer = ServerSerializer(server, data=request.data)
+        serializer = PutServerSerializer(server, data=request.data)
         if serializer.is_valid():
+            serializer.validated_data['user_id'] = request.user # user 추가
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
         server = self.get_object(pk)
-        server.delete()
+        server.delete()  
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagListAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     def get(self, request):
         queryset = Tag.objects.all()
         print(queryset)
@@ -106,13 +116,16 @@ class TagListAPI(APIView):
     
     def post(self, request):
         # request.data는 사용자의 입력 데이터
-        serializer = TagSerializer(data=request.data)
+        serializer = CreateTagSerializer(data=request.data)
         if serializer.is_valid(): #유효성 검사
+            serializer.validated_data["user_id"] = request.user
             serializer.save() # 저장
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class TagDetailAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     # def get_object(self, pk):
     #     try:
     #         return Tag.objects.get(pk=pk)
@@ -135,10 +148,14 @@ class TagDetailAPI(APIView):
     def delete(self, request, server_id, format=None):
         tag_name = request.data["tag_name"]
         tag = Tag.objects.filter(server_id=server_id, tag_name=tag_name)
-        tag.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if len(tag) != 0: #존재하지 않음
+            tag.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class LikeListAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     def get(self, request):
         queryset = Like.objects.all()
         print(queryset)
@@ -147,20 +164,25 @@ class LikeListAPI(APIView):
     
     def post(self, request):
         # request.data는 사용자의 입력 데이터
-        serializer = LikeSerializer(data=request.data)
+        serializer = CreateLikeSerializer(data=request.data)
         if serializer.is_valid(): #유효성 검사
+            serializer.validated_data['user_id'] = request.user
             serializer.save() # 저장
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request):
-        user_id = request.data['user_id']
+        user_id = request.user
         server_id = request.data['server_id']
         like = Like.objects.filter(user_id=user_id, server_id=server_id)
         # like = Like.objects.get(data=request.data)
-        like.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if len(like) != 0:
+            like.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 class LikeDetailAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     def get_object(self, pk):
         try:
             return Like.objects.get(pk=pk)

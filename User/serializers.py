@@ -56,12 +56,32 @@ class ServerSerializer(serializers.ModelSerializer) :
         model = Server        # Server 모델 사용
         fields = '__all__'            # 모든 필드 포함
 
+class CreateServerSerializer(serializers.ModelSerializer) :
+    class Meta :
+        model = Server        # Server 모델 사용
+        fields = ('server_id', 'server_name','server_url', 'server_description')            # 모든 필드 포함
+
+class PutServerSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Server        # Server 모델 사용
+        fields = ('server_id', 'server_name','server_url', 'server_description')            # 모든 필드 포함
+
 class TagSerializer(serializers.ModelSerializer) :
     class Meta :
         model = Tag        # Tag 모델 사용
         fields = '__all__'            # 모든 필드 포함
 
+class CreateTagSerializer(serializers.ModelSerializer) :
+    class Meta :
+        model = Tag        # Tag 모델 사용
+        fields = ('id', 'server_id', 'tag_name')
+
 class LikeSerializer(serializers.ModelSerializer) :
     class Meta :
         model = Like        # Like 모델 사용
         fields = '__all__'            # 모든 필드 포함
+
+class CreateLikeSerializer(serializers.ModelSerializer) :
+    class Meta :
+        model = Like        # Tag 모델 사용
+        fields = ('id', 'server_id')

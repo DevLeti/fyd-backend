@@ -10,6 +10,7 @@ class Server(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     server_name = models.CharField(max_length=200)
     server_url = models.CharField(max_length=400)
+    server_description = models.CharField(max_length=4000, null=True, blank=True)
 
 # TODO: Tag CRUD 구현
 class Tag(models.Model):
