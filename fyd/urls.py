@@ -16,10 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from User.views import UserListAPI, UserDetailAPI, ServerListAPI, ServerDetailAPI, LikeListAPI, LikeDetailAPI, TagListAPI, TagDetailAPI
+from User.views import UserListAPI, UserDetailAPI, ServerListAPI, ServerDetailAPI, LikeListAPI, LikeDetailAPI, TagListAPI, TagDetailAPI, MyTokenObtainPairView, RegisterView
+from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/login/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/register/', RegisterView.as_view(), name='auth_register'),
     path('api/user/', UserListAPI.as_view()),
     path('api/user/<str:pk>/', UserDetailAPI.as_view()),
     path('api/server/', ServerListAPI.as_view()),

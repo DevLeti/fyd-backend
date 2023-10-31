@@ -1,8 +1,9 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser,User
 
-class User(models.Model):
-    user_id = models.CharField(max_length=200, primary_key=True)
-    user_pw = models.CharField(max_length=200)
+# class User(AbstractUser):
+#     user_id = models.CharField(max_length=200)
+#     user_pw = models.CharField(max_length=200)
 
 class Server(models.Model):
     server_id = models.AutoField(primary_key=True)
