@@ -85,3 +85,11 @@ class CreateLikeSerializer(serializers.ModelSerializer) :
     class Meta :
         model = Like        # Tag 모델 사용
         fields = ('id', 'server_id')
+
+# TODO: Server id를 통해서 like와 tag 정보까지 불러오기
+class ServerLikeTagSerializer(serializers.ModelSerializer):
+    like = LikeSerializer()
+    tag = TagSerializer()
+    class Meta:
+        model = Server
+        fields = []
