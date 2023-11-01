@@ -41,7 +41,8 @@ schema_view = get_schema_view(
     openapi.Info( 
         title="FYI API", 
         default_version="v1", 
-        description="Fit Your Discord API Document", 
+        description="Fit Your Discord API Document.\n\
+                    Login, Register을 제외한 모든 API는 'Bearer (access token)'이 header에 추가되어야합니다.", 
         terms_of_service="https://www.google.com/policies/terms/", 
         contact=openapi.Contact(name="test", email="test@test.com"), 
         license=openapi.License(name="Test License"), 
