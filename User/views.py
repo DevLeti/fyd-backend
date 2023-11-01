@@ -18,6 +18,8 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = ([])
     serializer_class = RegisterSerializer
 class UserListAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     def get(self, request):
         queryset = User.objects.all()
         print(queryset)
@@ -32,6 +34,8 @@ class UserListAPI(APIView):
     #         return Response(serializer.data, status=status.HTTP_201_CREATED)
     #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class UserDetailAPI(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     def get_object(self, pk):
         try:
             return User.objects.get(pk=pk)
