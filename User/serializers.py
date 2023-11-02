@@ -92,4 +92,4 @@ class ServerLikeTagSerializer(serializers.ModelSerializer):
     tag = TagSerializer()
     class Meta:
         model = Server
-        fields = []
+        fields = ["server_id","user_id","server_name","server_url","server_description","like","tag"]

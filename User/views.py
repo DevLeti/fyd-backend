@@ -5,13 +5,15 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Server, Like, Tag
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
-from .serializers import UserSerializer, ServerSerializer, CreateServerSerializer, PutServerSerializer,LikeSerializer, CreateLikeSerializer, TagSerializer, CreateTagSerializer, RegisterSerializer
+from .serializers import UserSerializer, ServerSerializer, CreateServerSerializer, PutServerSerializer, ServerLikeTagSerializer, LikeSerializer, CreateLikeSerializer, TagSerializer, CreateTagSerializer, RegisterSerializer
 from rest_framework import status
 from django.http import Http404
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import generics
+
+import json
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -206,6 +208,31 @@ class LikeDetailAPI(APIView):
     #         serializer.save()
     #         return Response(serializer.data)
     #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ServerLikeTagAPI(APIView):
+    def get(self,request):
+        queryset=Server.objects.all()
+        server_serializer=ServerSerializer(queryset,many=True)
+        for server in server_serializer.data:
+            print(f"server_id: {server['server_id']}")
+            likes=Like.objects.filter(server_id=server['server_id'])
+            like_serializer = LikeSerializer(likes, many=True).data
+            # if(len(like_serializer) > 0):
+            #     print(json.dumps(like_serializer[0]))
+            server['like'] = []
+            for like in like_serializer:
+                print(f"like information: {like}")
+                server['like'] = like
+
+            tags=Tag.objects.filter(server_id=server['server_id'])
+            tag_serializer = TagSerializer(tags, many=True).data
+            server['tag'] = []
+            for tag in tag_serializer:
+                print(f"tag information: {tag}")
+                server['tag'] = tag
+        
+        return Response(server_serializer.data)
+
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
