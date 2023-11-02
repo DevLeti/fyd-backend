@@ -214,22 +214,20 @@ class ServerLikeTagAPI(APIView):
         queryset=Server.objects.all()
         server_serializer=ServerSerializer(queryset,many=True)
         for server in server_serializer.data:
-            print(f"server_id: {server['server_id']}")
+            # print(f"server_id: {server['server_id']}")
             likes=Like.objects.filter(server_id=server['server_id'])
             like_serializer = LikeSerializer(likes, many=True).data
-            # if(len(like_serializer) > 0):
-            #     print(json.dumps(like_serializer[0]))
             server['like'] = []
             for like in like_serializer:
-                print(f"like information: {like}")
-                server['like'] = like
+                # print(f"like information: {like}")
+                server['like'].append(like)
 
             tags=Tag.objects.filter(server_id=server['server_id'])
             tag_serializer = TagSerializer(tags, many=True).data
             server['tag'] = []
             for tag in tag_serializer:
-                print(f"tag information: {tag}")
-                server['tag'] = tag
+                # print(f"tag information: {tag}")
+                server['tag'].append(tag)
         
         return Response(server_serializer.data)
 
