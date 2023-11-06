@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Server, Like, Tag
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
-from .serializers import UserSerializer, ServerSerializer, CreateServerSerializer, PutServerSerializer, ServerLikeTagSerializer, LikeSerializer, CreateLikeSerializer, TagSerializer, CreateTagSerializer, RegisterSerializer, MyTokenObtainPairSerializer
+from .serializers import UserSerializer, ServerSerializer, CreateServerSerializer, PutServerSerializer, LikeSerializer, CreateLikeSerializer, TagSerializer, CreateTagSerializer, RegisterSerializer, MyTokenObtainPairSerializer
 from rest_framework import status
 from django.http import Http404
 from rest_framework_simplejwt.views import TokenObtainPairView
