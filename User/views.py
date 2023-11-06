@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from .serializers import UserSerializer, ServerSerializer, CreateServerSerializer, PutServerSerializer, LikeSerializer, CreateLikeSerializer, TagSerializer, CreateTagSerializer, RegisterSerializer, MyTokenObtainPairSerializer
 from rest_framework import status
-from django.http import Http404
+from django.http import Http404, HttpResponseServerError
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import generics
@@ -271,29 +271,31 @@ class ServerSearchAPI(APIView):
         4. server_id_map의 element인 각 server_id에 대해 server, tag, like 정보를 수집해 result에 append.
         5. result return.
         '''
-        server_id_map = set()
-        
-        server_queryset = Server.objects.filter(server_name__contains=search_keyword)
-        server_serializer = ServerSerializer(server_queryset, many=True)
-        for server in server_serializer.data:
-            # print(f"server id: {server['server_id']}, server name: {server['server_name']}") # type : 'int'
-            server_id_map.add(server['server_id'])
-        
-        tag_queryset = Tag.objects.filter(tag_name__contains=search_keyword)
-        tag_serializer = TagSerializer(tag_queryset, many=True)
-        for tag in tag_serializer.data:
-            # print(f"server id: {tag['server_id']}, tag name: {tag['tag_name']}") # type : 'int'
-            server_id_map.add(tag['server_id'])
+        try:
+            server_id_map = set()
+            
+            server_queryset = Server.objects.filter(server_name__contains=search_keyword)
+            server_serializer = ServerSerializer(server_queryset, many=True)
+            for server in server_serializer.data:
+                # print(f"server id: {server['server_id']}, server name: {server['server_name']}") # type : 'int'
+                server_id_map.add(server['server_id'])
+            
+            tag_queryset = Tag.objects.filter(tag_name__contains=search_keyword)
+            tag_serializer = TagSerializer(tag_queryset, many=True)
+            for tag in tag_serializer.data:
+                # print(f"server id: {tag['server_id']}, tag name: {tag['tag_name']}") # type : 'int'
+                server_id_map.add(tag['server_id'])
 
-        print(server_id_map)
+            print(server_id_map)
 
-        result = []
-        for server_id in server_id_map:
-            server_info = ServerSearchAPI.get_object(self, pk=server_id)
-            result.append(server_info)
+            result = []
+            for server_id in server_id_map:
+                server_info = ServerSearchAPI.get_object(self, pk=server_id)
+                result.append(server_info)
 
-        return Response(result)
-        
+            return Response(result)
+        except:
+            raise HttpResponseServerError
         
 
 class MyTokenObtainPairView(TokenObtainPairView):
