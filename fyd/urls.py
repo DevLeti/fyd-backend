@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path
 from django.conf import settings
-from User.views import UserListAPI, UserDetailAPI, ServerDetailAPI, ServerLikeTagAPI, LikeListAPI, LikeDetailAPI, TagListAPI, TagDetailAPI, MyTokenObtainPairView, RegisterView
+from User.views import UserListAPI, UserDetailAPI, ServerListAPI, ServerDetailAPI, LikeListAPI, LikeDetailAPI, TagListAPI, TagDetailAPI, MyTokenObtainPairView, RegisterView, ServerSearchAPI
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
@@ -29,12 +29,13 @@ urlpatterns = [
     path('api/register/', RegisterView.as_view(), name='auth_register'),
     path('api/user/', UserListAPI.as_view()),
     path('api/user/<str:pk>/', UserDetailAPI.as_view()),
-    path('api/server/', ServerLikeTagAPI.as_view()),
+    path('api/server/', ServerListAPI.as_view()),
     path('api/server/<int:pk>/', ServerDetailAPI.as_view()),
     path('api/tag/', TagListAPI.as_view()),
     path('api/tag/<int:server_id>/', TagDetailAPI.as_view()),
     path('api/like/', LikeListAPI.as_view()),
     path('api/like/<int:pk>/', LikeDetailAPI.as_view()),
+    path('api/search/<str:search_keyword>/', ServerSearchAPI.as_view()),
 ]
 
 schema_view = get_schema_view( 

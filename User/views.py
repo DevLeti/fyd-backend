@@ -5,10 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Server, Like, Tag
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
-from .serializers import UserSerializer, ServerSerializer, CreateServerSerializer, PutServerSerializer, ServerLikeTagSerializer, LikeSerializer, CreateLikeSerializer, TagSerializer, CreateTagSerializer, RegisterSerializer
+from .serializers import UserSerializer, ServerSerializer, CreateServerSerializer, PutServerSerializer, ServerLikeTagSerializer, LikeSerializer, CreateLikeSerializer, TagSerializer, CreateTagSerializer, RegisterSerializer, MyTokenObtainPairSerializer
 from rest_framework import status
 from django.http import Http404
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import generics
@@ -66,11 +65,26 @@ class ServerListAPI(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    def get(self, request):
-        queryset = Server.objects.all()
-        print(queryset)
-        serializer = ServerSerializer(queryset, many=True)
-        return Response(serializer.data)
+    def get(self,request):
+        queryset=Server.objects.all()
+        server_serializer=ServerSerializer(queryset,many=True)
+        for server in server_serializer.data:
+            # print(f"server_id: {server['server_id']}")
+            likes=Like.objects.filter(server_id=server['server_id'])
+            like_serializer = LikeSerializer(likes, many=True).data
+            server['like'] = []
+            for like in like_serializer:
+                # print(f"like information: {like}")
+                server['like'].append(like)
+
+            tags=Tag.objects.filter(server_id=server['server_id'])
+            tag_serializer = TagSerializer(tags, many=True).data
+            server['tag'] = []
+            for tag in tag_serializer:
+                # print(f"tag information: {tag}")
+                server['tag'].append(tag)
+        
+        return Response(server_serializer.data)
     
     def post(self, request):
         # request.data는 사용자의 입력 데이터
@@ -94,7 +108,21 @@ class ServerDetailAPI(APIView):
     def get(self, request, pk, format=None):
         server = self.get_object(pk)
         serializer = ServerSerializer(server)
-        return Response(serializer.data)
+        object_serializer_data = serializer.data
+
+        likes=Like.objects.filter(server_id=pk)
+        like_serializer = LikeSerializer(likes, many=True).data
+        object_serializer_data['like'] = []
+        for like in like_serializer:
+            object_serializer_data['like'].append(like)
+
+        tags=Tag.objects.filter(server_id=pk)
+        tag_serializer = TagSerializer(tags, many=True).data
+        object_serializer_data['tag'] = []
+        for tag in tag_serializer:
+            object_serializer_data['tag'].append(tag)
+
+        return Response(object_serializer_data)
 
     def put(self, request, pk, format=None):
         server = self.get_object(pk)
@@ -209,39 +237,64 @@ class LikeDetailAPI(APIView):
     #         return Response(serializer.data)
     #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class ServerLikeTagAPI(APIView):
-    def get(self,request):
-        queryset=Server.objects.all()
-        server_serializer=ServerSerializer(queryset,many=True)
-        for server in server_serializer.data:
-            # print(f"server_id: {server['server_id']}")
-            likes=Like.objects.filter(server_id=server['server_id'])
+class ServerSearchAPI(APIView):
+    def get_object(self,pk):
+        try:
+            object = Server.objects.get(pk=pk)
+            object_serializer = ServerSerializer(object)
+            object_serializer_data = object_serializer.data
+            # print(object_serializer.data)
+            # print(type(object_serializer.data))
+            likes=Like.objects.filter(server_id=pk)
             like_serializer = LikeSerializer(likes, many=True).data
-            server['like'] = []
+            object_serializer_data['like'] = []
             for like in like_serializer:
                 # print(f"like information: {like}")
-                server['like'].append(like)
+                object_serializer_data['like'].append(like)
 
-            tags=Tag.objects.filter(server_id=server['server_id'])
+            tags=Tag.objects.filter(server_id=pk)
             tag_serializer = TagSerializer(tags, many=True).data
-            server['tag'] = []
+            object_serializer_data['tag'] = []
             for tag in tag_serializer:
                 # print(f"tag information: {tag}")
-                server['tag'].append(tag)
+                object_serializer_data['tag'].append(tag)
+            # print(object_serializer_data)
+            return object_serializer_data
+        except Server.DoesNotExist:
+            raise Http404
+    
+    def get(self, request, search_keyword, format=None):
+        '''
+        1. server_name에 search_keyword가 포함된 경우 server_id_map에 server_id 추가.
+        2. tag_namep에 search_keyword가 포함된 경우 server_id_map에 server_id 추가.
+        3. server_id_map은 중복 불가이기 때문에 자동 중복 제거
+        4. server_id_map의 element인 각 server_id에 대해 server, tag, like 정보를 수집해 result에 append.
+        5. result return.
+        '''
+        server_id_map = set()
         
-        return Response(server_serializer.data)
+        server_queryset = Server.objects.filter(server_name__contains=search_keyword)
+        server_serializer = ServerSerializer(server_queryset, many=True)
+        for server in server_serializer.data:
+            # print(f"server id: {server['server_id']}, server name: {server['server_name']}") # type : 'int'
+            server_id_map.add(server['server_id'])
+        
+        tag_queryset = Tag.objects.filter(tag_name__contains=search_keyword)
+        tag_serializer = TagSerializer(tag_queryset, many=True)
+        for tag in tag_serializer.data:
+            # print(f"server id: {tag['server_id']}, tag name: {tag['tag_name']}") # type : 'int'
+            server_id_map.add(tag['server_id'])
 
+        print(server_id_map)
 
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
+        result = []
+        for server_id in server_id_map:
+            server_info = ServerSearchAPI.get_object(self, pk=server_id)
+            result.append(server_info)
 
-        # Add custom claims
-        token['username'] = user.username
-        # ...
-
-        return token
+        return Response(result)
+        
+        
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
