@@ -110,10 +110,13 @@ class ServerDetailAPI(APIView):
         serializer = ServerSerializer(server)
         object_serializer_data = serializer.data
 
+        object_serializer_data['user_liked'] = 'n'
         likes=Like.objects.filter(server_id=pk)
         like_serializer = LikeSerializer(likes, many=True).data
         object_serializer_data['like'] = []
         for like in like_serializer:
+            if(request.user.id == like['user_id']):
+                object_serializer_data['user_liked'] = 'y'
             object_serializer_data['like'].append(like)
 
         tags=Tag.objects.filter(server_id=pk)
@@ -121,6 +124,11 @@ class ServerDetailAPI(APIView):
         object_serializer_data['tag'] = []
         for tag in tag_serializer:
             object_serializer_data['tag'].append(tag)
+
+        if(request.user.id == object_serializer_data['user_id']):
+            object_serializer_data['is_owner'] = 'y'
+        else:
+            object_serializer_data['is_owner'] = 'n'
 
         return Response(object_serializer_data)
 
