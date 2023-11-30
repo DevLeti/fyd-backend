@@ -74,7 +74,8 @@ class ServerListAPI(APIView):
             like_serializer = LikeSerializer(likes, many=True).data
             server['like'] = []
             for like in like_serializer:
-                # print(f"like information: {like}")
+                if(request.user.id == like['user_id']):
+                    server['user_liked'] = 'y'
                 server['like'].append(like)
 
             tags=Tag.objects.filter(server_id=server['server_id'])
@@ -83,6 +84,11 @@ class ServerListAPI(APIView):
             for tag in tag_serializer:
                 # print(f"tag information: {tag}")
                 server['tag'].append(tag)
+        
+            if(request.user.id == server['user_id']):
+                server['is_owner'] = 'y'
+            else:
+                server['is_owner'] = 'n'
         
         return Response(server_serializer.data)
     
